@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Shadow Analyzer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <header class="header">
+            <h1>🔍 Instagram Shadow Analyzer</h1>
+            <p class="subtitle">
+                Analise quem não te segue de volta de forma simples e segura
+            </p>
+        </header>
+
+        <!-- UPLOAD -->
+        <section class="card upload-area">
+            <div>
+                <label>Upload Seguidores</label>
+                <input type="file" id="followersFile">
+            </div>
+
+            <div>
+                <label>Upload Seguindo</label>
+                <input type="file" id="followingFile">
+            </div>
+        </section>
+
+        <!-- BOTÃO -->
+        <button id="scanBtn">🚀 Iniciar Scan</button>
+
+        <!-- STATUS -->
+        <div id="status"></div>
+
+        <!-- RESULTADOS -->
+        <section id="results" class="hidden">
+
+            <!-- 📊 MÉTRICAS -->
+            <div class="metrics">
+                <div>
+                    <span>Seguindo</span>
+                    <strong id="totalFollowing"></strong>
+                </div>
+                <div>
+                    <span>Seguidores</span>
+                    <strong id="totalFollowers"></strong>
+                </div>
+                <div>
+                    <span>Não te seguem</span>
+                    <strong id="notFollowing"></strong>
+                </div>
+            </div>
+
+            <!-- 🔧 AÇÕES -->
+            <div class="actions">
+                <button id="clearScan">🗑️ Limpar análise</button>
+            </div>
+
+            <!-- 📋 LISTA -->
+            <div class="list-container">
+
+                <div class="list-header">
+                    <h3>Lista de Pendentes</h3>
+                    <p>Clique no nome para abrir o perfil</p>
+
+                    <!-- 🎯 FILTROS -->
+                    <div class="filters">
+                        <button data-filter="all" class="active">Todos</button>
+                        <button data-filter="keep">🟢 Manter</button>
+                        <button data-filter="maybe">🟡 Duvidoso</button>
+                        <button data-filter="remove">🔴 Remover</button>
+                    </div>
+                </div>
+
+                <ul id="userList"></ul>
+
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>Desenvolvido por <strong>Wendell Lago Soares</strong></p>
+            <div class="links-contato">
+                <a href="https://github.com/W3ndell-S04" target="_blank" title="GitHub">
+                    <i class="fa-brands fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/SEU-PERFIL" target="_blank" title="LinkedIn">
+                    <i class="fa-brands fa-linkedin"></i>
+                </a>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
