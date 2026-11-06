@@ -1,12 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Instagram Shadow Analyzer - Analise seus seguidores e descubra quem não segue você de volta de forma simples e segura.">
+
     <title>Instagram Shadow Analyzer</title>
+
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    >
 </head>
+
 <body>
 
     <div class="container">
@@ -14,70 +24,196 @@
         <!-- HEADER -->
         <header class="header">
             <h1>🔍 Instagram Shadow Analyzer</h1>
+
             <p class="subtitle">
-                Analise quem não te segue de volta de forma simples e segura
+                Analise seus relacionamentos no Instagram de forma simples e segura.
             </p>
         </header>
 
         <!-- UPLOAD -->
         <section class="card upload-area">
+
             <div>
-                <label>Upload Seguidores</label>
-                <input type="file" id="followersFile">
+                <label for="followersFile">
+                    <i class="fa-solid fa-users"></i>
+                    Upload Seguidores
+                </label>
+
+                <input
+                    type="file"
+                    id="followersFile"
+                    accept=".html,.json,.txt,.csv"
+                >
             </div>
 
             <div>
-                <label>Upload Seguindo</label>
-                <input type="file" id="followingFile">
+                <label for="followingFile">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Upload Seguindo
+                </label>
+
+                <input
+                    type="file"
+                    id="followingFile"
+                    accept=".html,.json,.txt,.csv"
+                >
             </div>
+
         </section>
 
-        <!-- BOTÃO -->
-        <button id="scanBtn">🚀 Iniciar Scan</button>
+        <!-- BOTÃO SCAN -->
+        <button id="scanBtn">
+            <i class="fa-solid fa-rocket"></i>
+            Iniciar Scan
+        </button>
 
         <!-- STATUS -->
-        <div id="status"></div>
+        <div id="status" role="status" aria-live="polite"></div>
 
         <!-- RESULTADOS -->
         <section id="results" class="hidden">
 
-            <!-- 📊 MÉTRICAS -->
+            <!-- MÉTRICAS -->
             <div class="metrics">
+
                 <div>
-                    <span>Seguindo</span>
-                    <strong id="totalFollowing"></strong>
+                    <span>
+                        <i class="fa-solid fa-user-plus"></i>
+                        Seguindo
+                    </span>
+
+                    <strong id="totalFollowing">0</strong>
                 </div>
+
                 <div>
-                    <span>Seguidores</span>
-                    <strong id="totalFollowers"></strong>
+                    <span>
+                        <i class="fa-solid fa-users"></i>
+                        Seguidores
+                    </span>
+
+                    <strong id="totalFollowers">0</strong>
                 </div>
+
                 <div>
-                    <span>Não te seguem</span>
-                    <strong id="notFollowing"></strong>
+                    <span>
+                        <i class="fa-solid fa-user-xmark"></i>
+                        Não te seguem
+                    </span>
+
+                    <strong id="notFollowing">0</strong>
                 </div>
+
             </div>
 
-            <!-- 🔧 AÇÕES -->
+            <!-- AÇÕES -->
             <div class="actions">
-                <button id="clearScan">🗑️ Limpar análise</button>
+
+                <button id="clearScan" type="button">
+                    <i class="fa-solid fa-trash-can"></i>
+                    Limpar análise
+                </button>
+
             </div>
 
-            <!-- 📋 LISTA -->
+            <!-- LISTA DE USUÁRIOS -->
             <div class="list-container">
 
                 <div class="list-header">
-                    <h3>Lista de Pendentes</h3>
-                    <p>Clique no nome para abrir o perfil</p>
 
-                    <!-- 🎯 FILTROS -->
-                    <div class="filters">
-                        <button data-filter="all" class="active">Todos</button>
-                        <button data-filter="keep">🟢 Manter</button>
-                        <button data-filter="maybe">🟡 Duvidoso</button>
-                        <button data-filter="remove">🔴 Remover</button>
-                    </div>
+                    <h3>Lista de Usuários</h3>
+
+                    <p>
+                        Clique no nome para abrir o perfil do Instagram.
+                    </p>
+
                 </div>
 
+                <!-- FILTROS DE RELACIONAMENTO -->
+                <div class="filter-section">
+
+                    <h4>
+                        <i class="fa-solid fa-filter"></i>
+                        Tipo de relacionamento
+                    </h4>
+
+                    <div class="filters relation-filters">
+
+                        <button
+                            type="button"
+                            data-relation="following"
+                            class="active"
+                        >
+                            <i class="fa-solid fa-user-plus"></i>
+                            Seguindo
+                        </button>
+
+                        <button
+                            type="button"
+                            data-relation="followers"
+                        >
+                            <i class="fa-solid fa-users"></i>
+                            Seguidores
+                        </button>
+
+                        <button
+                            type="button"
+                            data-relation="notFollowing"
+                        >
+                            <i class="fa-solid fa-user-xmark"></i>
+                            Não retribuem
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- FILTROS DE CLASSIFICAÇÃO -->
+                <div class="filter-section">
+
+                    <h4>
+                        <i class="fa-solid fa-tags"></i>
+                        Classificação dos usuários
+                    </h4>
+
+                    <div class="filters tag-filters">
+
+                        <button
+                            type="button"
+                            data-filter="all"
+                            class="active"
+                        >
+                            Todos
+                        </button>
+
+                        <button
+                            type="button"
+                            data-filter="keep"
+                        >
+                            🟢 Manter
+                        </button>
+
+                        <button
+                            type="button"
+                            data-filter="maybe"
+                        >
+                            🟡 Duvidoso
+                        </button>
+
+                        <button
+                            type="button"
+                            data-filter="remove"
+                        >
+                            🔴 Remover
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- CONTADOR -->
+                <p id="listCounter" class="list-counter"></p>
+
+                <!-- LISTA DINÂMICA -->
                 <ul id="userList"></ul>
 
             </div>
@@ -86,19 +222,42 @@
 
         <!-- FOOTER -->
         <footer class="footer">
-            <p>Desenvolvido por <strong>Wendell Lago Soares</strong></p>
+
+            <p>
+                Desenvolvido por
+                <strong>Wendell Lago Soares</strong>
+            </p>
+
             <div class="links-contato">
-                <a href="https://github.com/W3ndell-S04" target="_blank" title="GitHub">
+
+                <a
+                    href="https://github.com/W3ndell-S04"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="GitHub"
+                    aria-label="GitHub"
+                >
                     <i class="fa-brands fa-github"></i>
                 </a>
-                <a href="https://www.linkedin.com/in/SEU-PERFIL" target="_blank" title="LinkedIn">
+
+                <a
+                    href="https://www.linkedin.com/in/SEU-PERFIL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="LinkedIn"
+                    aria-label="LinkedIn"
+                >
                     <i class="fa-brands fa-linkedin"></i>
                 </a>
+
             </div>
+
         </footer>
 
     </div>
 
+    <!-- JAVASCRIPT -->
     <script src="js/script.js"></script>
+
 </body>
 </html>

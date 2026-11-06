@@ -1,3 +1,9 @@
+
+/* ========================================
+   INSTAGRAM SHADOW ANALYZER
+   DESIGN SYSTEM
+======================================== */
+
 /* RESET */
 * {
     margin: 0;
@@ -5,100 +11,177 @@
     box-sizing: border-box;
 }
 
-/* DESIGN SYSTEM */
 :root {
     --bg: #0f172a;
     --card: #1e293b;
     --card-soft: #111827;
+
     --accent: #22c55e;
     --accent-hover: #16a34a;
+
     --danger: #ef4444;
     --warning: #eab308;
+    --info: #38bdf8;
+
     --text: #e2e8f0;
     --subtext: #94a3b8;
+
     --border: #334155;
+
+    --radius: 12px;
+    --transition: 0.2s ease;
 }
 
-/* BODY */
+/* ========================================
+   BODY
+======================================== */
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, sans-serif;
+
     background: var(--bg);
     color: var(--text);
+
     display: flex;
     justify-content: center;
-    padding: 20px;
+
+    padding: 25px 20px;
 }
 
-/* CONTAINER */
+/* ========================================
+   CONTAINER
+======================================== */
+
 .container {
     width: 100%;
-    max-width: 720px;
+    max-width: 800px;
 }
 
-/* HEADER */
+/* ========================================
+   HEADER
+======================================== */
+
 .header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .subtitle {
     font-size: 14px;
     color: var(--subtext);
-    margin-top: 5px;
+    margin-top: 8px;
+    line-height: 1.5;
 }
 
-/* CARDS */
+/* ========================================
+   CARDS
+======================================== */
+
 .card {
     background: var(--card);
     border-radius: 16px;
-    padding: 15px;
+    padding: 18px;
     border: 1px solid var(--border);
 }
 
-/* UPLOAD */
+/* ========================================
+   UPLOAD
+======================================== */
+
 .upload-area {
     display: flex;
     gap: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .upload-area div {
     flex: 1;
+    min-width: 0;
+
     background: var(--card-soft);
-    padding: 15px;
-    border-radius: 12px;
+    padding: 16px;
+
+    border-radius: var(--radius);
     border: 1px solid var(--border);
-    transition: 0.2s;
+
+    transition: var(--transition);
 }
 
 .upload-area div:hover {
     border-color: var(--accent);
+    transform: translateY(-2px);
 }
 
-/* LABEL */
-label {
+.upload-area label {
+    display: block;
     font-size: 13px;
-    color: var(--subtext);
-}
-
-/* INPUT */
-input[type="file"] {
-    margin-top: 8px;
-    width: 100%;
     color: var(--text);
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
-/* BUTTON */
-button {
+.upload-area label i {
+    color: var(--accent);
+    margin-right: 5px;
+}
+
+/* ========================================
+   INPUTS
+======================================== */
+
+input[type="file"] {
+    margin-top: 5px;
     width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    border: none;
+    color: var(--subtext);
+    font-size: 12px;
+}
+
+input[type="file"]::file-selector-button {
+    background: var(--card);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    padding: 8px 10px;
+    margin-right: 8px;
+
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+input[type="file"]::file-selector-button:hover {
     background: var(--accent);
     color: #022c22;
-    font-weight: bold;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+button {
+    border: none;
+    border-radius: var(--radius);
+
+    padding: 12px 15px;
+
+    background: var(--accent);
+    color: #022c22;
+
+    font-weight: 700;
+    font-size: 13px;
+
     cursor: pointer;
-    transition: 0.2s;
+
+    transition: var(--transition);
 }
 
 button:hover {
@@ -106,68 +189,191 @@ button:hover {
     transform: translateY(-1px);
 }
 
-/* STATUS */
+button:active {
+    transform: scale(0.98);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--info);
+    outline-offset: 3px;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+/* BOTÃO PRINCIPAL */
+
+#scanBtn {
+    width: 100%;
+    padding: 14px;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    border-radius: 12px;
+
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.12);
+}
+
+#scanBtn i {
+    margin-right: 5px;
+}
+
+/* ========================================
+   STATUS
+======================================== */
+
 #status {
     margin-top: 15px;
+    margin-bottom: 5px;
+
     text-align: center;
-    font-size: 14px;
+
+    font-size: 13px;
+    line-height: 1.5;
+
     color: var(--subtext);
 }
 
-/* RESULTS */
+/* ========================================
+   RESULTS
+======================================== */
+
 #results {
-    margin-top: 20px;
+    margin-top: 22px;
 }
 
-/* 📌 METRICS (STICKY) */
+.hidden {
+    display: none !important;
+}
+
+/* ========================================
+   METRICS - STICKY
+======================================== */
+
 .metrics {
     position: sticky;
     top: 10px;
     z-index: 20;
+
     display: flex;
     gap: 10px;
+
     margin-bottom: 15px;
     padding: 10px;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
+
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
     border-radius: 16px;
     border: 1px solid var(--border);
 }
 
 .metrics div {
     flex: 1;
+    min-width: 0;
+
     background: var(--card);
-    padding: 12px;
+
+    padding: 14px 10px;
+
     border-radius: 12px;
-    text-align: center;
     border: 1px solid var(--border);
-    transition: 0.2s;
+
+    text-align: center;
+
+    transition: var(--transition);
 }
 
 .metrics div:hover {
     transform: translateY(-2px);
+    border-color: var(--accent);
 }
 
 .metrics span {
     display: block;
+
     font-size: 12px;
     color: var(--subtext);
+
+    margin-bottom: 6px;
+}
+
+.metrics span i {
+    margin-right: 4px;
+    color: var(--accent);
 }
 
 .metrics strong {
-    font-size: 18px;
+    display: block;
+
+    font-size: 22px;
+    font-weight: 800;
+
+    color: var(--text);
 }
 
-/* LIST CONTAINER */
+/* ========================================
+   ACTIONS
+======================================== */
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-bottom: 15px;
+}
+
+.actions button {
+    width: auto;
+
+    background: var(--card);
+    color: var(--danger);
+
+    border: 1px solid var(--border);
+
+    padding: 9px 13px;
+    font-size: 12px;
+}
+
+.actions button:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--danger);
+}
+
+.actions button i {
+    margin-right: 5px;
+}
+
+/* ========================================
+   LIST CONTAINER
+======================================== */
+
 .list-container {
     background: var(--card);
-    padding: 15px;
+
+    padding: 18px;
+
     border-radius: 16px;
     border: 1px solid var(--border);
 }
 
-/* HEADER LISTA */
+/* ========================================
+   LIST HEADER
+======================================== */
+
+.list-header {
+    margin-bottom: 18px;
+}
+
 .list-header h3 {
+    font-size: 18px;
     margin-bottom: 5px;
 }
 
@@ -176,120 +382,247 @@ button:hover {
     color: var(--subtext);
 }
 
-/* 🎯 FILTROS */
+/* ========================================
+   FILTER SECTIONS
+======================================== */
+
+.filter-section {
+    margin-top: 18px;
+}
+
+.filter-section h4 {
+    font-size: 12px;
+    font-weight: 700;
+
+    color: var(--subtext);
+
+    margin-bottom: 9px;
+
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-section h4 i {
+    margin-right: 5px;
+    color: var(--accent);
+}
+
+/* ========================================
+   FILTER BUTTONS
+======================================== */
+
 .filters {
     display: flex;
-    gap: 8px;
-    margin-top: 12px;
     flex-wrap: wrap;
+    gap: 8px;
+
+    margin-top: 10px;
 }
 
 .filters button {
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.2s;
     width: auto;
+    flex: 1 1 auto;
+
+    padding: 9px 12px;
+
+    border-radius: 9px;
+
+    border: 1px solid var(--border);
+
+    background: var(--card-soft);
+    color: var(--subtext);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition: var(--transition);
 }
 
-/* Hover */
 .filters button:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: #263449;
+    color: var(--text);
+
+    border-color: var(--accent);
+
+    transform: translateY(-1px);
 }
 
-/* Ativo padrão */
-.filters button.active {
+.filters button i {
+    margin-right: 5px;
+}
+
+/* ========================================
+   RELATIONSHIP FILTERS
+======================================== */
+
+.relation-filters button.active {
     background: var(--accent);
     color: #022c22;
+
+    border-color: var(--accent);
+
+    box-shadow: 0 3px 10px rgba(34, 197, 94, 0.12);
+}
+
+/* ========================================
+   TAG FILTERS
+======================================== */
+
+.tag-filters button.active {
+    background: var(--accent);
+    color: #022c22;
+
     border-color: var(--accent);
 }
 
-/* Cores específicas por filtro */
-.filters button[data-filter="keep"].active {
-    background: var(--accent);
-}
-
-.filters button[data-filter="maybe"].active {
+.tag-filters button[data-filter="maybe"].active {
     background: var(--warning);
-    color: black;
+    color: #1c1917;
+
+    border-color: var(--warning);
 }
 
-.filters button[data-filter="remove"].active {
+.tag-filters button[data-filter="remove"].active {
     background: var(--danger);
     color: white;
+
+    border-color: var(--danger);
 }
 
-/* LISTA */
+/* ========================================
+   LIST COUNTER
+======================================== */
+
+.list-counter {
+    font-size: 12px;
+    color: var(--subtext);
+
+    margin-top: 20px;
+    margin-bottom: 8px;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+/* ========================================
+   USER LIST
+======================================== */
+
 ul {
     list-style: none;
     margin-top: 10px;
 }
 
-/* ITEM */
 li {
     display: flex;
     align-items: center;
-    padding: 10px;
-    border-radius: 12px;
-    transition: 0.2s;
+    gap: 10px;
+
+    padding: 12px 10px;
+
+    border-radius: 10px;
     border: 1px solid transparent;
+
+    transition: var(--transition);
 }
 
 li:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.035);
     border-color: var(--border);
 }
 
-/* ITEM SALVO */
+/* ITEM ANALISADO */
+
 li.saved {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.15);
 }
 
-/* CHECKBOX */
-li input {
-    margin-right: 10px;
-    transform: scale(1.2);
+/* ========================================
+   CHECKBOX
+======================================== */
+
+li input[type="checkbox"] {
+    flex-shrink: 0;
+
+    width: 16px;
+    height: 16px;
+
+    margin: 0;
+
+    accent-color: var(--accent);
+
     cursor: pointer;
 }
 
-/* LINK */
+/* ========================================
+   INSTAGRAM LINK
+======================================== */
+
 li a {
-    color: #38bdf8;
+    color: var(--info);
+
     text-decoration: none;
+
     font-size: 14px;
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+
+    transition: var(--transition);
 }
 
 li a:hover {
+    color: #7dd3fc;
     text-decoration: underline;
 }
 
-/* TAGS */
+/* ========================================
+   TAGS DOS USUÁRIOS
+======================================== */
+
 .tag {
     margin-left: auto;
+
     display: flex;
+    align-items: center;
+
     gap: 5px;
+
+    flex-shrink: 0;
 }
 
 .tag button {
-    border: none;
-    padding: 5px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: 0.2s;
+    width: auto;
+
+    border: 1px solid transparent;
+
+    padding: 6px 9px;
+
+    border-radius: 7px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    opacity: 0.65;
+
+    transition: var(--transition);
 }
 
 .tag button:hover {
     opacity: 1;
+    transform: translateY(-1px);
 }
 
 .tag .keep {
     background: var(--accent);
+    color: #022c22;
+}
+
+.tag .maybe {
+    background: var(--warning);
+    color: #1c1917;
 }
 
 .tag .remove {
@@ -297,40 +630,240 @@ li a:hover {
     color: white;
 }
 
-.tag .maybe {
-    background: var(--warning);
-    color: black;
-}
-
 .tag button.active {
     opacity: 1;
-    outline: 2px solid white;
+
+    outline: 2px solid var(--text);
+    outline-offset: 1px;
 }
 
-/* FOOTER */
-footer {
-    margin-top: 30px;
+/* ========================================
+   EMPTY STATE
+======================================== */
+
+li.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px 15px;
+
+    color: var(--subtext);
+
+    font-size: 13px;
     text-align: center;
+
+    border: 1px dashed var(--border);
+    background: var(--card-soft);
+}
+
+/* ========================================
+   FOOTER
+======================================== */
+
+.footer {
+    margin-top: 30px;
+
+    text-align: center;
+
     font-size: 12px;
     color: var(--subtext);
 }
 
-/* RESPONSIVO */
-@media (max-width: 600px) {
-    .upload-area {
-        flex-direction: column;
+.footer strong {
+    color: var(--text);
+}
+
+.links-contato {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+
+    margin-top: 12px;
+}
+
+.links-contato a {
+    color: var(--subtext);
+
+    font-size: 20px;
+
+    transition: var(--transition);
+}
+
+.links-contato a:hover {
+    color: var(--accent);
+    transform: translateY(-3px);
+}
+
+/* ========================================
+   RESPONSIVIDADE - TABLETS
+======================================== */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 20px 15px;
     }
 
-    .metrics {
+    .container {
+        max-width: 100%;
+    }
+
+    .metrics strong {
+        font-size: 20px;
+    }
+
+}
+
+/* ========================================
+   RESPONSIVIDADE - CELULARES
+======================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 15px 10px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+    }
+
+    .subtitle {
+        font-size: 12px;
+    }
+
+    /* UPLOAD */
+
+    .upload-area {
         flex-direction: column;
+        gap: 10px;
+    }
+
+    .upload-area div {
+        padding: 13px;
+    }
+
+    /* MÉTRICAS */
+
+    .metrics {
         position: static;
+
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+
+        gap: 6px;
+        padding: 7px;
+    }
+
+    .metrics div {
+        padding: 12px 5px;
+    }
+
+    .metrics span {
+        font-size: 10px;
+    }
+
+    .metrics span i {
+        display: block;
+        margin: 0 0 5px;
+    }
+
+    .metrics strong {
+        font-size: 19px;
+    }
+
+    /* LISTA */
+
+    .list-container {
+        padding: 13px;
+    }
+
+    .list-header h3 {
+        font-size: 16px;
+    }
+
+    /* FILTROS */
+
+    .filters {
+        gap: 6px;
+    }
+
+    .relation-filters {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .relation-filters button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .tag-filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tag-filters button {
+        width: 100%;
+    }
+
+    /* USUÁRIOS */
+
+    li {
+        flex-wrap: wrap;
+        gap: 8px;
+
+        padding: 11px 7px;
+    }
+
+    li a {
+        font-size: 13px;
     }
 
     .tag {
+        width: 100%;
+
+        margin-left: 24px;
+
+        justify-content: flex-start;
         flex-wrap: wrap;
     }
 
-    .filters {
-        justify-content: center;
+    .tag button {
+        flex: 1;
+        min-width: 65px;
     }
+
+    /* AÇÕES */
+
+    .actions button {
+        width: 100%;
+    }
+
+}
+
+/* ========================================
+   TELAS MUITO PEQUENAS
+======================================== */
+
+@media (max-width: 360px) {
+
+    .header h1 {
+        font-size: 19px;
+    }
+
+    .metrics span {
+        font-size: 9px;
+    }
+
+    .metrics strong {
+        font-size: 17px;
+    }
+
+    .tag button {
+        font-size: 9px;
+        padding: 6px 5px;
+    }
+
 }

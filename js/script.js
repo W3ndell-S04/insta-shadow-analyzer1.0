@@ -1,3 +1,9 @@
+
+// ========================================
+// INSTAGRAM SHADOW ANALYZER
+// ========================================
+
+// ELEMENTOS DO HTML
 const scanBtn = document.getElementById("scanBtn");
 const followersInput = document.getElementById("followersFile");
 const followingInput = document.getElementById("followingFile");
@@ -8,133 +14,424 @@ const statusDiv = document.getElementById("status");
 const totalFollowersEl = document.getElementById("totalFollowers");
 const totalFollowingEl = document.getElementById("totalFollowing");
 const notFollowingEl = document.getElementById("notFollowing");
-const userListEl = document.getElementById("userList");
 
+const userListEl = document.getElementById("userList");
+const listCounterEl = document.getElementById("listCounter");
+const clearScanBtn = document.getElementById("clearScan");
+
+// LOCAL STORAGE
 const STORAGE_KEY = "instaScanData";
 const SCAN_KEY = "instaScanLastResult";
 
-let currentFilter = "all";
-let originalList = [];
+// ESTADO DA APLICAÇÃO
+let relationshipFilter = "following";
+let tagFilter = "all";
 
-// =============================
-// 📦 LOCAL STORAGE (DECISÕES)
-// =============================
+let scanData = {
+    followers: [],
+    following: [],
+    notFollowing: []
+};
+
+// ========================================
+// LOCAL STORAGE - CLASSIFICAÇÕES
+// ========================================
+
 function loadSaved() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch (error) {
+        console.error("Erro ao carregar classificações:", error);
+        return {};
+    }
 }
 
 function saveData(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+        console.error("Erro ao salvar classificações:", error);
+        statusDiv.innerText = "⚠️ Não foi possível salvar os dados no navegador.";
+    }
 }
 
-// =============================
-// ☁️ STORAGE DO SCAN
-// =============================
+// ========================================
+// LOCAL STORAGE - SCAN
+// ========================================
+
 function saveScan(data) {
-    localStorage.setItem(SCAN_KEY, JSON.stringify(data));
+    try {
+        localStorage.setItem(SCAN_KEY, JSON.stringify(data));
+    } catch (error) {
+        console.error("Erro ao salvar análise:", error);
+        statusDiv.innerText = "⚠️ Não foi possível salvar a análise.";
+    }
 }
 
 function loadScan() {
-    return JSON.parse(localStorage.getItem(SCAN_KEY));
+    try {
+        return JSON.parse(localStorage.getItem(SCAN_KEY));
+    } catch (error) {
+        console.error("Erro ao recuperar análise:", error);
+        return null;
+    }
 }
 
-// =============================
-// 🔍 EXTRAÇÃO
-// =============================
-function extractUsers(content, ext) {
-    let users = new Set();
+// ========================================
+// NORMALIZAÇÃO DE USUÁRIOS
+// ========================================
 
-    if (ext === "html") {
-        let parser = new DOMParser();
-        let doc = parser.parseFromString(content, "text/html");
+function normalizeUsername(value) {
+    if (typeof value !== "string") return null;
 
-        doc.querySelectorAll("a, td").forEach(el => {
-            let text = el.textContent.trim();
-            if (text) users.add(text);
-        });
-    } else {
-        let regex = /(?<=_u\/)[a-zA-Z0-9._]+|(?<="value": ")[a-zA-Z0-9._]+/g;
-        let found = content.match(regex) || [];
+    let username = value.trim();
 
-        if (found.length === 0) {
-            found = content.match(/\b[a-zA-Z0-9._]{3,30}\b/g) || [];
+    if (!username) return null;
+
+    // Trata URLs do Instagram
+    if (/^https?:\/\//i.test(username)) {
+        try {
+            const url = new URL(username);
+
+            if (!url.hostname.toLowerCase().includes("instagram.com")) {
+                return null;
+            }
+
+            const parts = url.pathname.split("/").filter(Boolean);
+
+            if (parts[0] === "_u") {
+                parts.shift();
+            }
+
+            username = parts[0] || "";
+        } catch {
+            return null;
         }
-
-        found.forEach(u => users.add(u));
     }
 
-    let cleanUsers = new Set();
-    users.forEach(u => {
-        let username = u.split("/").pop().replace("_u/", "").trim();
-        if (
-            !["login", "instagram", "threads", "about"].includes(username.toLowerCase()) &&
-            isNaN(username)
-        ) {
-            cleanUsers.add(username);
+    username = username
+        .replace(/^@/, "")
+        .replace(/^\/+|\/+$/g, "")
+        .trim();
+
+    if (
+        !username ||
+        username.includes("/") ||
+        username.length > 30 ||
+        !/^[a-zA-Z0-9._]+$/.test(username)
+    ) {
+        return null;
+    }
+
+    const reserved = [
+        "login",
+        "logout",
+        "instagram",
+        "threads",
+        "about",
+        "explore",
+        "accounts",
+        "direct",
+        "p",
+        "reel",
+        "reels",
+        "stories",
+        "developer",
+        "legal",
+        "privacy",
+        "terms"
+    ];
+
+    if (reserved.includes(username.toLowerCase())) {
+        return null;
+    }
+
+    return username.toLowerCase();
+}
+
+// ========================================
+// EXTRAÇÃO - HTML
+// ========================================
+
+function extractFromHTML(content) {
+    const users = new Set();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+
+    doc.querySelectorAll("a[href]").forEach(element => {
+        const href = element.getAttribute("href");
+
+        const usernameFromLink = normalizeUsername(href);
+
+        if (usernameFromLink) {
+            users.add(usernameFromLink);
+            return;
+        }
+
+        const usernameFromText = normalizeUsername(
+            element.textContent
+        );
+
+        if (usernameFromText) {
+            users.add(usernameFromText);
         }
     });
 
-    return cleanUsers;
+    return users;
 }
 
-// =============================
-// 📂 FILE READER
-// =============================
+// ========================================
+// EXTRAÇÃO - JSON
+// ========================================
+
+function extractFromJSON(content) {
+    const users = new Set();
+
+    try {
+        const data = JSON.parse(content);
+
+        function processObject(object) {
+            if (!object || typeof object !== "object") {
+                return;
+            }
+
+            if (Array.isArray(object)) {
+                object.forEach(processObject);
+                return;
+            }
+
+            if (Array.isArray(object.string_list_data)) {
+                object.string_list_data.forEach(item => {
+                    const username =
+                        normalizeUsername(item.value) ||
+                        normalizeUsername(item.href);
+
+                    if (username) {
+                        users.add(username);
+                    }
+                });
+            }
+
+            if (typeof object.title === "string") {
+                const username = normalizeUsername(object.title);
+
+                if (username) {
+                    users.add(username);
+                }
+            }
+
+            if (typeof object.username === "string") {
+                const username = normalizeUsername(object.username);
+
+                if (username) {
+                    users.add(username);
+                }
+            }
+
+            Object.values(object).forEach(value => {
+                if (value && typeof value === "object") {
+                    processObject(value);
+                }
+            });
+        }
+
+        processObject(data);
+
+    } catch (error) {
+        console.warn("Não foi possível interpretar o JSON:", error);
+    }
+
+    return users;
+}
+
+// ========================================
+// EXTRAÇÃO - TXT / CSV
+// ========================================
+
+function extractFromText(content) {
+    const users = new Set();
+
+    const links = content.match(
+        /https?:\/\/(?:www\.)?instagram\.com\/(?:_u\/)?[a-zA-Z0-9._]+\/?/gi
+    ) || [];
+
+    links.forEach(link => {
+        const username = normalizeUsername(link);
+
+        if (username) users.add(username);
+    });
+
+    const patterns = [
+        /"value"\s*:\s*"([^"]+)"/gi,
+        /_u\/([a-zA-Z0-9._]+)/gi
+    ];
+
+    patterns.forEach(pattern => {
+        let match;
+
+        while ((match = pattern.exec(content)) !== null) {
+            const username = normalizeUsername(match[1]);
+
+            if (username) users.add(username);
+        }
+    });
+
+    content.split(/\r?\n/).forEach(line => {
+        const value = line
+            .trim()
+            .replace(/^["']|["']$/g, "");
+
+        const username = normalizeUsername(value);
+
+        if (username) users.add(username);
+    });
+
+    return users;
+}
+
+// ========================================
+// EXTRAÇÃO PRINCIPAL
+// ========================================
+
+function extractUsers(content, extension) {
+    const ext = extension.toLowerCase();
+
+    if (ext === "html" || ext === "htm") {
+        return extractFromHTML(content);
+    }
+
+    if (ext === "json") {
+        return extractFromJSON(content);
+    }
+
+    return extractFromText(content);
+}
+
+// ========================================
+// LEITURA DOS ARQUIVOS
+// ========================================
+
 function readFile(file) {
     return new Promise((resolve, reject) => {
-        let reader = new FileReader();
+        const reader = new FileReader();
+
         reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
+        reader.onerror = () => reject(reader.error);
+
         reader.readAsText(file);
     });
 }
 
-// =============================
-// 🎯 FILTRO
-// =============================
-function applyFilter(users) {
-    const savedData = loadSaved();
+// ========================================
+// LISTA DO RELACIONAMENTO ATUAL
+// ========================================
 
-    if (currentFilter === "all") return users;
-
-    return users.filter(user => savedData[user]?.tag === currentFilter);
+function getCurrentList() {
+    return scanData[relationshipFilter] || [];
 }
 
-// =============================
-// 🎯 RENDER LISTA
-// =============================
-function renderList(users) {
+// ========================================
+// FILTRO DE CLASSIFICAÇÃO
+// ========================================
+
+function applyTagFilter(users) {
     const savedData = loadSaved();
-    const filteredUsers = applyFilter(users);
+
+    if (tagFilter === "all") {
+        return users;
+    }
+
+    return users.filter(user => {
+        return savedData[user]?.tag === tagFilter;
+    });
+}
+
+// ========================================
+// ATUALIZAÇÃO DOS BOTÕES
+// ========================================
+
+function updateFilterButtons() {
+    document
+        .querySelectorAll(".relation-filters button")
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.relation === relationshipFilter
+            );
+        });
+
+    document
+        .querySelectorAll(".tag-filters button")
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.filter === tagFilter
+            );
+        });
+}
+
+// ========================================
+// RENDERIZAÇÃO DA LISTA
+// ========================================
+
+function renderList() {
+    const users = getCurrentList();
+    const filteredUsers = applyTagFilter(users);
+    const savedData = loadSaved();
 
     userListEl.innerHTML = "";
 
+    if (filteredUsers.length === 0) {
+        const emptyItem = document.createElement("li");
+
+        emptyItem.className = "empty-state";
+
+        emptyItem.innerText =
+            users.length === 0
+                ? "Nenhum usuário encontrado nesta categoria."
+                : "Nenhum usuário encontrado com essa classificação.";
+
+        userListEl.appendChild(emptyItem);
+    }
+
     filteredUsers.forEach(user => {
-        let li = document.createElement("li");
+        const li = document.createElement("li");
 
-        if (savedData[user]) {
-            li.classList.add("saved");
-        }
+        // CHECKBOX
+        const checkbox = document.createElement("input");
 
-        // Checkbox
-        let checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = savedData[user]?.checked || false;
+        checkbox.setAttribute(
+            "aria-label",
+            `Marcar ${user} como analisado`
+        );
+
+        li.classList.toggle("saved", checkbox.checked);
 
         checkbox.addEventListener("change", () => {
-            savedData[user] = savedData[user] || {};
-            savedData[user].checked = checkbox.checked;
-            saveData(savedData);
+            const updatedData = loadSaved();
+
+            updatedData[user] = updatedData[user] || {};
+            updatedData[user].checked = checkbox.checked;
+
+            saveData(updatedData);
+
+            li.classList.toggle("saved", checkbox.checked);
         });
 
-        // Link
-        let link = document.createElement("a");
-        link.href = `https://www.instagram.com/${user}`;
-        link.target = "_blank";
-        link.innerText = user;
+        // LINK DO INSTAGRAM
+        const link = document.createElement("a");
 
-        // Tags
-        let tagContainer = document.createElement("div");
+        link.href = `https://www.instagram.com/${encodeURIComponent(user)}/`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.innerText = `@${user}`;
+
+        // TAGS
+        const tagContainer = document.createElement("div");
+
         tagContainer.className = "tag";
 
         const tags = [
@@ -143,31 +440,29 @@ function renderList(users) {
             { key: "remove", label: "Remover" }
         ];
 
-        tags.forEach(t => {
-            let btn = document.createElement("button");
-            btn.innerText = t.label;
-            btn.classList.add(t.key);
+        tags.forEach(tag => {
+            const button = document.createElement("button");
 
-            if (savedData[user]?.tag === t.key) {
-                btn.classList.add("active");
+            button.type = "button";
+            button.innerText = tag.label;
+            button.classList.add(tag.key);
+
+            if (savedData[user]?.tag === tag.key) {
+                button.classList.add("active");
             }
 
-            btn.addEventListener("click", () => {
-                savedData[user] = savedData[user] || {};
-                savedData[user].tag = t.key;
+            button.addEventListener("click", () => {
+                const updatedData = loadSaved();
 
-                tagContainer.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
+                updatedData[user] = updatedData[user] || {};
+                updatedData[user].tag = tag.key;
 
-                li.classList.add("saved");
+                saveData(updatedData);
 
-                saveData(savedData);
-
-                // 🔄 re-render com filtro ativo
-                renderList(originalList);
+                renderList();
             });
 
-            tagContainer.appendChild(btn);
+            tagContainer.appendChild(button);
         });
 
         li.appendChild(checkbox);
@@ -176,93 +471,247 @@ function renderList(users) {
 
         userListEl.appendChild(li);
     });
+
+    // CONTADOR
+    if (listCounterEl) {
+        listCounterEl.innerText =
+            `Exibindo ${filteredUsers.length} de ${users.length} usuários`;
+    }
 }
 
-// =============================
-// 🎛️ FILTROS
-// =============================
-document.querySelectorAll(".filters button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        currentFilter = btn.dataset.filter;
+// ========================================
+// MÉTRICAS
+// ========================================
 
-        document.querySelectorAll(".filters button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
+function updateMetrics() {
+    totalFollowersEl.innerText = scanData.followers.length;
+    totalFollowingEl.innerText = scanData.following.length;
+    notFollowingEl.innerText = scanData.notFollowing.length;
+}
 
-        renderList(originalList);
+// ========================================
+// FILTROS DE RELACIONAMENTO
+// ========================================
+
+document
+    .querySelectorAll(".relation-filters button")
+    .forEach(button => {
+        button.addEventListener("click", () => {
+            relationshipFilter = button.dataset.relation;
+
+            updateFilterButtons();
+            renderList();
+        });
     });
-});
 
-// =============================
-// 🚀 SCAN
-// =============================
+// ========================================
+// FILTROS DE CLASSIFICAÇÃO
+// ========================================
+
+document
+    .querySelectorAll(".tag-filters button")
+    .forEach(button => {
+        button.addEventListener("click", () => {
+            tagFilter = button.dataset.filter;
+
+            updateFilterButtons();
+            renderList();
+        });
+    });
+
+// ========================================
+// SCAN PRINCIPAL
+// ========================================
+
 scanBtn.addEventListener("click", async () => {
     const followersFile = followersInput.files[0];
     const followingFile = followingInput.files[0];
 
     if (!followersFile || !followingFile) {
-        alert("Envie os dois arquivos!");
+        alert("Envie os arquivos de seguidores e seguindo!");
         return;
     }
 
-    statusDiv.innerText = "⏳ Processando...";
+    scanBtn.disabled = true;
+    scanBtn.innerText = "⏳ Processando...";
+
+    statusDiv.innerText = "⏳ Lendo arquivos do Instagram...";
 
     try {
         const followersContent = await readFile(followersFile);
         const followingContent = await readFile(followingFile);
 
-        const followers = extractUsers(
+        const followersExtension = followersFile.name
+            .split(".").pop().toLowerCase();
+
+        const followingExtension = followingFile.name
+            .split(".").pop().toLowerCase();
+
+        const followersSet = extractUsers(
             followersContent,
-            followersFile.name.split(".").pop().toLowerCase()
+            followersExtension
         );
 
-        const following = extractUsers(
+        const followingSet = extractUsers(
             followingContent,
-            followingFile.name.split(".").pop().toLowerCase()
+            followingExtension
         );
 
-        const notFollowing = [...following].filter(u => !followers.has(u)).sort();
+        const followers = [...followersSet].sort();
+        const following = [...followingSet].sort();
 
-        originalList = notFollowing;
+        const notFollowing = following
+            .filter(user => !followersSet.has(user))
+            .sort();
 
-        // métricas
-        totalFollowersEl.innerText = followers.size;
-        totalFollowingEl.innerText = following.size;
-        notFollowingEl.innerText = notFollowing.length;
+        // ATUALIZA DADOS
+        scanData = {
+            followers,
+            following,
+            notFollowing
+        };
 
-        // salvar scan
+        relationshipFilter = "following";
+        tagFilter = "all";
+
+        // ATUALIZA INTERFACE
+        updateMetrics();
+        updateFilterButtons();
+        renderList();
+
+        // SALVA ANÁLISE COMPLETA
         saveScan({
-            list: notFollowing,
-            followersCount: followers.size,
-            followingCount: following.size
+            followers,
+            following,
+            notFollowing,
+            followersCount: followers.length,
+            followingCount: following.length,
+            date: new Date().toISOString()
         });
 
-        renderList(originalList);
-
-        statusDiv.innerText = "✅ Análise concluída!";
         resultsDiv.classList.remove("hidden");
 
-    } catch (err) {
-        console.error(err);
-        statusDiv.innerText = "❌ Erro ao processar arquivos.";
+        statusDiv.innerText =
+            `✅ Análise concluída! ${following.length} seguindo, ` +
+            `${followers.length} seguidores e ` +
+            `${notFollowing.length} não retribuem.`;
+
+    } catch (error) {
+        console.error("Erro durante o scan:", error);
+
+        statusDiv.innerText =
+            "❌ Erro ao processar os arquivos. Verifique os arquivos enviados.";
+
+    } finally {
+        scanBtn.disabled = false;
+
+        scanBtn.innerHTML =
+            '<i class="fa-solid fa-rocket"></i> Iniciar Scan';
     }
 });
 
-// =============================
-// 🔄 AUTO LOAD
-// =============================
+// ========================================
+// CARREGAR ÚLTIMA ANÁLISE
+// ========================================
+
 window.addEventListener("load", () => {
     const savedScan = loadScan();
 
-    if (savedScan) {
-        originalList = savedScan.list;
+    if (!savedScan) return;
 
-        totalFollowersEl.innerText = savedScan.followersCount;
-        totalFollowingEl.innerText = savedScan.followingCount;
-        notFollowingEl.innerText = savedScan.list.length;
+    const hasFollowersArray = Array.isArray(savedScan.followers);
+    const hasFollowingArray = Array.isArray(savedScan.following);
 
-        renderList(originalList);
+    const isLegacyScan =
+        !hasFollowersArray || !hasFollowingArray;
 
-        resultsDiv.classList.remove("hidden");
-        statusDiv.innerText = "📂 Última análise carregada automaticamente";
+    scanData = {
+        followers: hasFollowersArray ? savedScan.followers : [],
+        following: hasFollowingArray ? savedScan.following : [],
+        notFollowing: Array.isArray(savedScan.notFollowing)
+            ? savedScan.notFollowing
+            : Array.isArray(savedScan.list)
+                ? savedScan.list
+                : []
+    };
+
+    // Define o filtro inicial
+    relationshipFilter = isLegacyScan
+        ? "notFollowing"
+        : "following";
+
+    tagFilter = "all";
+
+    // Atualiza métricas com os dados disponíveis
+    updateMetrics();
+
+    // PRESERVA AS MÉTRICAS DAS ANÁLISES ANTIGAS
+    if (isLegacyScan) {
+        totalFollowersEl.innerText =
+            savedScan.followersCount ?? 0;
+
+        totalFollowingEl.innerText =
+            savedScan.followingCount ?? 0;
+
+        notFollowingEl.innerText =
+            scanData.notFollowing.length;
     }
+
+    updateFilterButtons();
+    renderList();
+
+    resultsDiv.classList.remove("hidden");
+
+    if (isLegacyScan) {
+        statusDiv.innerText =
+            "📂 Análise antiga carregada. Faça um novo scan para visualizar todas as listas.";
+    } else {
+        statusDiv.innerText =
+            "📂 Última análise carregada automaticamente.";
+    }
+});
+
+// ========================================
+// LIMPAR ANÁLISE
+// ========================================
+
+clearScanBtn.addEventListener("click", () => {
+    const confirmed = confirm(
+        "Tem certeza que deseja limpar a análise atual?\n\n" +
+        "Suas classificações e usuários marcados serão preservados."
+    );
+
+    if (!confirmed) return;
+
+    // Remove somente os dados do scan
+    localStorage.removeItem(SCAN_KEY);
+
+    // Reinicia os dados
+    scanData = {
+        followers: [],
+        following: [],
+        notFollowing: []
+    };
+
+    relationshipFilter = "following";
+    tagFilter = "all";
+
+    // Limpa arquivos selecionados
+    followersInput.value = "";
+    followingInput.value = "";
+
+    // Atualiza interface
+    updateMetrics();
+    updateFilterButtons();
+
+    userListEl.innerHTML = "";
+
+    if (listCounterEl) {
+        listCounterEl.innerText = "";
+    }
+
+    resultsDiv.classList.add("hidden");
+
+    statusDiv.innerText =
+        "🗑️ Análise limpa. Suas classificações foram preservadas.";
 });
